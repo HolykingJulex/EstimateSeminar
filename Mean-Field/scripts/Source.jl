@@ -151,7 +151,7 @@ function Heisenberg_Hamilt(A::Array{Tuple{Float64, Float64, Float64}}, J::Float6
         for neigh in NNlist
             Ha += (-J * 0.5 * (A[cord...] * A[neigh...]))
         end
-        Ha += -H * A[cord...]
+        Ha += -1 * (H * A[cord...])
     end
     return Ha
 end
@@ -168,7 +168,8 @@ function Heisenberg_Hamilt(A::Array{Tuple{Float64, Float64, Float64}}, J::Float1
         for neigh in NNlist
             Ha += (-J * 0.5 * (A[cord...] * A[neigh...]))
         end
-        Ha += -H * A[cord...]
+        #Ha += -2 * (H *(-1* current + New_spin)) * 6 * 10^(-5) # 2 to take into account g /mubohr on both sides we left out 
+        Ha += -2 * (H * A[cord...])* 6 * 10^(-5) # 2 to take into account g /mubohr on both sides we left out 
     end
     return Ha
 end
@@ -177,23 +178,23 @@ end
   Calculates the difference in Energy for a given flip and the new angle
 """
 function Heisenberg_Delta(grid::AbstractGrid,pos::Vector{Int64},New_spin::Tuple{Float64, Float64, Float64})
+    #println()
     current = grid.matrix[pos...]
-    n = length(grid.dimension)
-    N = grid.dimension
-    Ha = 0
+    #println("ccurrent",current)
+    #println("New",New_spin)
+    #println("H",grid.H_field)
+    #println("dot ",grid.H_field[2] , New_spin[2], "    ",  2 * (grid.H_field *(-1* current + New_spin)) )
     
-    for i in 1:n
-        
-        nnm,nnp = copy(pos),copy(pos)
-        nnm[i] = mod1(nnm[i]-1,N[i]) 
-        nnp[i] = mod1(nnp[i]+1,N[i]) 
-        
-        Ha -=   grid.J_coup  * ( (-1* current + New_spin) * grid.matrix[nnp...])
-        Ha -=   grid.J_coup  * ( (-1* current + New_spin) * grid.matrix[nnm...])
-    end
-    Ha += -grid.H_field * current
+  
+    
+    Ha = 2 * (grid.H_field *(-1* current + New_spin)) #* 6 * 10^(-5) # 2 to take into account g /mubohr on both sides we left out 
+    #Ha += -2 * (grid.H_field * current ) * 6 * 10^(-5) # 2 to take into account g /mubohr on both sides we left out 
+    #Ha += -2 * (grid.H_field[2] * New_spin[2] ) #* 6 * 10^(-5) # 2 to take into account g /mubohr on both sides we left out 
+    
     return Ha
 end
+
+
 
 """
   Calculates the difference in Magnetisation(call before doing the flip....)
@@ -214,9 +215,18 @@ function Thermalisation(grid::AbstractGrid,T::Float64,Steps::Int64)
         proposed_spin = normalise_spin((rand(-100:100)/10.0,rand(-100:100)/10.0,rand(-100:100)/10.0))
         
         Delta_energy = Heisenberg_Delta(grid,flip,proposed_spin)
-        
-        if (rand()< exp(-Delta_energy/T))
-         #   if (Delta_energy< 0) || (rand()< exp(-Delta_energy/T))
+        #println("DeltaE", Delta_energy)
+        k_b = 1.30 * 10^(-23)
+        k_b = 1
+
+        metroplis_P  = exp(-Delta_energy/(k_b*T))
+        Glauber_P  = metroplis_P/(1+metroplis_P)
+        #println("metroplis_P", metroplis_P)
+        #println("Glauber_P", Glauber_P)
+        #if (rand()< exp(-Delta_energy/T))
+        #if (rand()<Glauber_P )
+        if (Delta_energy< 0) || (rand()< Glauber_P)
+        #println("CHAAAAAAAAAANGGGGGEEEEEEEEE")
             grid.matrix[flip...] = Tuple(proposed_spin)        
         end
         
@@ -283,28 +293,23 @@ end
 
 
 
-HEIGHT = 1000
-WIDTH = 2000
+HEIGHT = 500
+WIDTH = 500
 BACKGROUND = colorant"antiquewhite"
 
-N = [20,10]
+N = [1,1,1]
 J = -1.0
-H = 0
+H = (0.0,1500.0,0.0)
 
-twoD_grid = Grid(N,J,0.0)
+twoD_grid = Grid(N,J,H)
 
 A = twoD_grid.matrix
 
-As = []
-
-for (ind,cord) in enumerate(CartesianIndices(A))
-    c =  (A[Tuple(cord)...][3] +1)*0.5
-    push!(As,Arrow_Dir(cord[1]*900+10,cord[2]*1800+10,A[Tuple(cord)...][1]*40,A[Tuple(cord)...][2]*40,c))
-end
+cord = (1,1)
+c =  (A[Tuple(cord)...][3] +1)*0.5
+As = [Arrow_Dir(250,250,A[Tuple(cord)...][1]*40,A[Tuple(cord)...][2]*40,c)]
 
 
-a = Arrow(100, 100, 200, 200)
-l = Line(100, 100, 200, 200)
 
 function draw(g::Game) 
     for A in As
@@ -317,10 +322,10 @@ end
 
 
 function update(g::Game)
-    Thermalisation(twoD_grid,0.08,1000)
+    Thermalisation(twoD_grid,300.0,1)
     An = twoD_grid.matrix    
     for (ind,cord) in enumerate(CartesianIndices(An))
         c = (A[Tuple(cord)...][3] +1)*0.5
-        As[ind]= Arrow_Dir(cord[1]*90+10,cord[2]*90+10,An[Tuple(cord)...][1]*50,An[Tuple(cord)...][2]*50,c)
+        As[ind]= Arrow_Dir(250,250,An[Tuple(cord)...][1]*50,An[Tuple(cord)...][2]*50,c)
     end
 end
