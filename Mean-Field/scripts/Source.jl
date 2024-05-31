@@ -32,7 +32,7 @@ abstract type AbstractGrid end
 mutable struct Grid <: AbstractGrid
     dimension::Vector{Int64} 
     J_coup::Float16
-    H_field::Float16
+    H_field::Tuple{Float64, Float64, Float64}
     matrix::Array{Tuple{Float64, Float64, Float64}}
     E::Float64
     M::Tuple{Float64, Float64, Float64}
@@ -142,7 +142,7 @@ end
 """
   This calculates/applies the hamiltonian for the complete grid/matrix
 """
-function Heisenberg_Hamilt(A::Array{Tuple{Float64, Float64, Float64}}, J::Float64, H::Float64)
+function Heisenberg_Hamilt(A::Array{Tuple{Float64, Float64, Float64}}, J::Float64, H::Tuple{Float64, Float64, Float64})
     Ha = 0
     for cords in CartesianIndices(A)
         cord = Tuple(cords)
@@ -151,7 +151,7 @@ function Heisenberg_Hamilt(A::Array{Tuple{Float64, Float64, Float64}}, J::Float6
         for neigh in NNlist
             Ha += (-J * 0.5 * (A[cord...] * A[neigh...]))
         end
-        #Ha += -H * A[cord...]
+        Ha += -H * A[cord...]
     end
     return Ha
 end
@@ -159,7 +159,7 @@ end
 """
   This calculates/applies the hamiltonian for the complete grid/matrix
 """
-function Heisenberg_Hamilt(A::Array{Tuple{Float64, Float64, Float64}}, J::Float16, H::Float16)
+function Heisenberg_Hamilt(A::Array{Tuple{Float64, Float64, Float64}}, J::Float16, H::Tuple{Float64, Float64, Float64})
     Ha = 0
     for cords in CartesianIndices(A)
         cord = Tuple(cords)
@@ -168,7 +168,7 @@ function Heisenberg_Hamilt(A::Array{Tuple{Float64, Float64, Float64}}, J::Float1
         for neigh in NNlist
             Ha += (-J * 0.5 * (A[cord...] * A[neigh...]))
         end
-        #Ha += -H * A[cord...]
+        Ha += -H * A[cord...]
     end
     return Ha
 end
@@ -191,6 +191,7 @@ function Heisenberg_Delta(grid::AbstractGrid,pos::Vector{Int64},New_spin::Tuple{
         Ha -=   grid.J_coup  * ( (-1* current + New_spin) * grid.matrix[nnp...])
         Ha -=   grid.J_coup  * ( (-1* current + New_spin) * grid.matrix[nnm...])
     end
+    Ha += -grid.H_field * current
     return Ha
 end
 
@@ -287,7 +288,7 @@ WIDTH = 2000
 BACKGROUND = colorant"antiquewhite"
 
 N = [20,10]
-J = 1.0
+J = -1.0
 H = 0
 
 twoD_grid = Grid(N,J,0.0)
@@ -316,8 +317,7 @@ end
 
 
 function update(g::Game)
-    Thermalisation(twoD_grid,0.04,1000)
-    #Thermalisation(twoD_grid,6.0,2)
+    Thermalisation(twoD_grid,0.08,1000)
     An = twoD_grid.matrix    
     for (ind,cord) in enumerate(CartesianIndices(An))
         c = (A[Tuple(cord)...][3] +1)*0.5

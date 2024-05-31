@@ -274,9 +274,7 @@ function draw(s::Screen, l::LineF, c::Colorant=colorant"red"; jbool=true)
         #SDL_RenderPresent( s.renderer )
         #SDL_RenderDrawLine(s.renderer, Cint.((l.x1, l.y1, l.x2, l.y2))...)
     else
-        #trunc(Int,px)
-        #SDL_RenderDrawLine(s.renderer, Cint.((l.x1, l.y1, l.x2, l.y2))...)
-        SDL_RenderDrawLine(s.renderer, Cint.((trunc(Int,l.x1), trunc(Int,l.y1), trunc(Int,l.x2), trunc(Int,l.y2)))...)
+        SDL_RenderDrawLine(s.renderer, Cint.((l.x1, l.y1, l.x2, l.y2))...)
     end
 end
 
