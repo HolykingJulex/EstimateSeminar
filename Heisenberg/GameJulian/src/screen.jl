@@ -264,10 +264,6 @@ function draw(s::Screen, l::LineF, c::Colorant=colorant"red"; jbool=true)
         vertices_1 = [vertex_1,vertex_2,vertex_3]
         vertices_2 = [vertex_2,vertex_3,vertex_4]
 
-        
-            
-        
-            
          #text = SDL_CreateTextureFromSurface(s.renderer, sf)
          #renderer::Core.Any, texture::Core.Any, vertices::Core.Any, num_vertices::Core.Any, indices::Core.Any, num_indices::Core.Any
         #SDL_RenderGeometry( s.renderer,nullptr, vertices,4,C_NULL,0)

@@ -3,6 +3,28 @@ using DrWatson
 @quickactivate "Heisenberg"
 
 
+#adding vectors
+Base.:+(a::Tuple{Float64, Float64, Float64}, b::Vector{Float64}) = (a[1]+b[1],a[2]+b[2],a[3]+b[3])
+Base.:+(a::Tuple{Float64, Float64, Float64}, b::Tuple{Float64, Float64, Float64}) = (a[1]+b[1],a[2]+b[2],a[3]+b[3])
+Base.:+(a::Tuple{Float64, Float64, Float64}, b::Tuple{Int64, Int64, Int64}) = (a[1]+b[1],a[2]+b[2],a[3]+b[3])
+
+Base.:-(a::Tuple{Float64, Float64, Float64}, b::Tuple{Int64, Int64, Int64}) = (a[1]-b[1],a[2]-b[2],a[3]-b[3])
+Base.:-(a::Tuple{Float64, Float64, Float64}, b::Tuple{Float64, Float64, Float64}) = (a[1]-b[1],a[2]-b[2],a[3]-b[3])
+
+
+# real scalar product
+Base.:*(a::Tuple{Float64, Float64, Float64},b::Tuple{Float64, Float64, Float64}) = a[1]*b[1]+a[2]*b[2]+a[3]*b[3]
+Base.:*(a::Vector{Float64},b::Tuple{Float64, Float64, Float64}) = a[1]*b[1]+a[2]*b[2]+a[3]*b[3]
+Base.:*(a::Tuple{Float64, Float64, Float64},b::Vector{Float64}) = a[1]*b[1]+a[2]*b[2]+a[3]*b[3]
+
+# scaling a vector
+Base.:*(a::Int64,b::Tuple{Float64, Float64, Float64}) = (a*b[1],a*b[2],a*b[3])
+Base.:*(a::Float64,b::Tuple{Float64, Float64, Float64}) = (a*b[1],a*b[2],a*b[3])
+
+Base.:/(a::Tuple{Float64, Float64, Float64},b::Int64) = (a[1]/b,a[2]/b,a[3]/b)
+
+Base.:abs(a::Tuple{Float64, Float64, Float64}) = (abs(a[1]),abs(a[2]),abs(a[3]))
+
 
 abstract type AbstractGrid end
 #and this sadly doesnt work for an n-dimensional case
@@ -39,10 +61,6 @@ function assertCorrectness(c::AbstractGrid)
     @assert isapprox(abs(c.M), Magnetisation(c.matrix)) "The Magnetisation diverged $(c.M) and $(Magnetisation(c.matrix))"
 end
 
-Base.show(io::IO, person::AbstractGrid) = println(io, "Dimension: $(person.dimension) J_coup: $(person.J_coup) H_field: $(person.H_field) Energy: $(person.E) Mag: $(person.M)")
-
-using DrWatson
-@quickactivate "Heisenberg"
 
 function normalise_spin(input::Vector{Float64})
     x,y,z = input
@@ -55,30 +73,6 @@ function normalise_spin(input::Tuple{Float64, Float64, Float64})
     norm = sqrt(x^2 + y^2 + z^2)
     return (x/norm,y/norm,z/norm)
 end
-
-#adding vectors
-Base.:+(a::Tuple{Float64, Float64, Float64}, b::Vector{Float64}) = (a[1]+b[1],a[2]+b[2],a[3]+b[3])
-Base.:+(a::Tuple{Float64, Float64, Float64}, b::Tuple{Float64, Float64, Float64}) = (a[1]+b[1],a[2]+b[2],a[3]+b[3])
-Base.:+(a::Tuple{Float64, Float64, Float64}, b::Tuple{Int64, Int64, Int64}) = (a[1]+b[1],a[2]+b[2],a[3]+b[3])
-
-Base.:-(a::Tuple{Float64, Float64, Float64}, b::Tuple{Int64, Int64, Int64}) = (a[1]-b[1],a[2]-b[2],a[3]-b[3])
-Base.:-(a::Tuple{Float64, Float64, Float64}, b::Tuple{Float64, Float64, Float64}) = (a[1]-b[1],a[2]-b[2],a[3]-b[3])
-
-
-# real scalar product
-Base.:*(a::Tuple{Float64, Float64, Float64},b::Tuple{Float64, Float64, Float64}) = a[1]*b[1]+a[2]*b[2]+a[3]*b[3]
-Base.:*(a::Vector{Float64},b::Tuple{Float64, Float64, Float64}) = a[1]*b[1]+a[2]*b[2]+a[3]*b[3]
-Base.:*(a::Tuple{Float64, Float64, Float64},b::Vector{Float64}) = a[1]*b[1]+a[2]*b[2]+a[3]*b[3]
-
-# scaling a vector
-Base.:*(a::Int64,b::Tuple{Float64, Float64, Float64}) = (a*b[1],a*b[2],a*b[3])
-Base.:*(a::Float64,b::Tuple{Float64, Float64, Float64}) = (a*b[1],a*b[2],a*b[3])
-
-Base.:/(a::Tuple{Float64, Float64, Float64},b::Int64) = (a[1]/b,a[2]/b,a[3]/b)
-
-Base.:abs(a::Tuple{Float64, Float64, Float64}) = (abs(a[1]),abs(a[2]),abs(a[3]))
-
-
 
 
 """
@@ -220,7 +214,8 @@ function Thermalisation(grid::AbstractGrid,T::Float64,Steps::Int64)
         
         Delta_energy = Heisenberg_Delta(grid,flip,proposed_spin)
         
-        if (Delta_energy< 0) || (rand()< exp(-Delta_energy/T))
+        if (rand()< exp(-Delta_energy/T))
+         #   if (Delta_energy< 0) || (rand()< exp(-Delta_energy/T))
             grid.matrix[flip...] = Tuple(proposed_spin)        
         end
         
@@ -250,7 +245,6 @@ function Arrow(xb,yb,xt,yt)
    
     return [l1,l2,l3]	
 end
-
 
 
 function Arrow_Dir(xb,yb,Dx,Dy,c)
@@ -287,6 +281,7 @@ end
 
 
 
+
 HEIGHT = 1000
 WIDTH = 2000
 BACKGROUND = colorant"antiquewhite"
@@ -294,6 +289,7 @@ BACKGROUND = colorant"antiquewhite"
 N = [20,10]
 J = -1.0
 H = 0
+
 twoD_grid = Grid(N,J,0.0)
 
 A = twoD_grid.matrix
@@ -301,10 +297,10 @@ A = twoD_grid.matrix
 As = []
 
 for (ind,cord) in enumerate(CartesianIndices(A))
-
     c =  (A[Tuple(cord)...][3] +1)*0.5
     push!(As,Arrow_Dir(cord[1]*900+10,cord[2]*1800+10,A[Tuple(cord)...][1]*40,A[Tuple(cord)...][2]*40,c))
 end
+
 
 a = Arrow(100, 100, 200, 200)
 l = Line(100, 100, 200, 200)
@@ -312,22 +308,18 @@ l = Line(100, 100, 200, 200)
 function draw(g::Game) 
     for A in As
         for a in A
-            draw(a,colorant"red")
+            draw(a)
+        end
     end
 end
-end
-
-
 
 
 
 function update(g::Game)
-    Thermalisation(twoD_grid,0.2,1000)
-    An = twoD_grid.matrix
-    
+    Thermalisation(twoD_grid,0.08,1000)
+    An = twoD_grid.matrix    
     for (ind,cord) in enumerate(CartesianIndices(An))
         c = (A[Tuple(cord)...][3] +1)*0.5
         As[ind]= Arrow_Dir(cord[1]*90+10,cord[2]*90+10,An[Tuple(cord)...][1]*50,An[Tuple(cord)...][2]*50,c)
     end
-
 end

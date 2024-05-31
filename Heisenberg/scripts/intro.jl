@@ -6,4 +6,4 @@ using DrWatson
 using GameJulian
 
 
-rungame("dummy_src_file.jl",true)
+rungame("Source.jl",true)

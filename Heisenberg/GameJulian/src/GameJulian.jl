@@ -172,7 +172,7 @@ end
     `rungame(game_file::String)`
     `rungame()`
 
-    The entry point to GameZero. This is the user-facing function that is used to start a game. 
+    The entry point to GameJulian. This is the user-facing function that is used to start a game. 
     The single argument method should be used from the REPL or main script. It takes the game source
     file as it's only argument. 
 
@@ -184,7 +184,7 @@ function rungame(jlf::String, external::Bool=true)
     # external=true means rungame has been called from the REPl or run script, with the game file as input
     # external=false means rungame has been called at the bottom of the game file itself
     global playing, paused
-    println(jlf)
+    println("Runnning WUHUHUUU")
     g = initgame(jlf::String, external)
     try
         playing[] = paused[] = true
@@ -225,9 +225,7 @@ function initgame(jlf::String, external::Bool)
     end
 
     if external
-        print("got her2e")
-        #include(plotsdir("GameJulian.jl"))
-        #Base.include_string(g.game_module, "GameJulian.jl")
+        
         Base.include_string(g.game_module, "using GameJulian")
         Base.include_string(g.game_module, "import GameJulian.draw")
         Base.include_string(g.game_module, "using Colors")
