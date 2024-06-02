@@ -248,8 +248,6 @@ end
 
 
 function Arrow_Dir(xb,yb,Dx,Dy,c)
-
-
     #xt = trunc(Int, xb+Dx) 
     xt =  xb+Dx
     #yt = trunc(Int, yb+Dy) 
@@ -283,27 +281,25 @@ end
 
 
 HEIGHT = 1000
-WIDTH = 2000
+WIDTH = 1900
 BACKGROUND = colorant"antiquewhite"
 
 N = [20,10]
-J = 1.0
-H = 0
+J = -1.0
+
+T = 0.04
+Steps_per_Frame = 1000
+
 
 twoD_grid = Grid(N,J,0.0)
-
 A = twoD_grid.matrix
 
 As = []
-
-for (ind,cord) in enumerate(CartesianIndices(A))
+for cord in CartesianIndices(A)
     c =  (A[Tuple(cord)...][3] +1)*0.5
     push!(As,Arrow_Dir(cord[1]*900+10,cord[2]*1800+10,A[Tuple(cord)...][1]*40,A[Tuple(cord)...][2]*40,c))
 end
 
-
-a = Arrow(100, 100, 200, 200)
-l = Line(100, 100, 200, 200)
 
 function draw(g::Game) 
     for A in As
@@ -314,13 +310,12 @@ function draw(g::Game)
 end
 
 
-
 function update(g::Game)
-    Thermalisation(twoD_grid,0.04,1000)
-    #Thermalisation(twoD_grid,6.0,2)
+    Thermalisation(twoD_grid,T,Steps_per_Frame)
+    
     An = twoD_grid.matrix    
     for (ind,cord) in enumerate(CartesianIndices(An))
         c = (A[Tuple(cord)...][3] +1)*0.5
-        As[ind]= Arrow_Dir(cord[1]*90+10,cord[2]*90+10,An[Tuple(cord)...][1]*50,An[Tuple(cord)...][2]*50,c)
+        As[ind]= Arrow_Dir(cord[1]*90+7,cord[2]*90+5,An[Tuple(cord)...][1]*50,An[Tuple(cord)...][2]*50,c)
     end
 end
