@@ -1,5 +1,5 @@
 using DrWatson
-@quickactivate "Heisenberg"
+@quickactivate "Mean-Field"
 #using GameZero
 # Here you may include files from the source directory
 

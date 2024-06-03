@@ -1,6 +1,6 @@
 using Colors
 using DrWatson
-@quickactivate "Heisenberg"
+@quickactivate "Mean-Field"
 
 
 #adding vectors
