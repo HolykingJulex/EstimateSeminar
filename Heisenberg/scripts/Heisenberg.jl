@@ -1,6 +1,6 @@
 using Colors
 using DrWatson
-@quickactivate "Mean-Field"
+@quickactivate "Heisenberg"
 
 
 #adding vectors
@@ -151,7 +151,7 @@ function Heisenberg_Hamilt(A::Array{Tuple{Float64, Float64, Float64}}, J::Float6
         for neigh in NNlist
             Ha += (-J * 0.5 * (A[cord...] * A[neigh...]))
         end
-        Ha += -1 * (H * A[cord...])
+       # Ha += 2 * (grid.H_field *(-1* current + New_spin)) 
     end
     return Ha
 end
@@ -168,8 +168,7 @@ function Heisenberg_Hamilt(A::Array{Tuple{Float64, Float64, Float64}}, J::Float1
         for neigh in NNlist
             Ha += (-J * 0.5 * (A[cord...] * A[neigh...]))
         end
-        #Ha += -2 * (H *(-1* current + New_spin)) * 6 * 10^(-5) # 2 to take into account g /mubohr on both sides we left out 
-        Ha += -2 * (H * A[cord...])* 6 * 10^(-5) # 2 to take into account g /mubohr on both sides we left out 
+        #Ha += -H * A[cord...]
     end
     return Ha
 end
@@ -178,23 +177,24 @@ end
   Calculates the difference in Energy for a given flip and the new angle
 """
 function Heisenberg_Delta(grid::AbstractGrid,pos::Vector{Int64},New_spin::Tuple{Float64, Float64, Float64})
-    #println()
     current = grid.matrix[pos...]
-    #println("ccurrent",current)
-    #println("New",New_spin)
-    #println("H",grid.H_field)
-    #println("dot ",grid.H_field[2] , New_spin[2], "    ",  2 * (grid.H_field *(-1* current + New_spin)) )
+    n = length(grid.dimension)
+    N = grid.dimension
+    Ha = 0
     
-  
-    
-    Ha = 2 * (grid.H_field *(-1* current + New_spin)) #* 6 * 10^(-5) # 2 to take into account g /mubohr on both sides we left out 
-    #Ha += -2 * (grid.H_field * current ) * 6 * 10^(-5) # 2 to take into account g /mubohr on both sides we left out 
-    #Ha += -2 * (grid.H_field[2] * New_spin[2] ) #* 6 * 10^(-5) # 2 to take into account g /mubohr on both sides we left out 
-    
+    for i in 1:n
+        
+        nnm,nnp = copy(pos),copy(pos)
+        nnm[i] = mod1(nnm[i]-1,N[i]) 
+        nnp[i] = mod1(nnp[i]+1,N[i]) 
+        
+        Ha -=   grid.J_coup  * ( (-1* current + New_spin) * grid.matrix[nnp...])
+        Ha -=   grid.J_coup  * ( (-1* current + New_spin) * grid.matrix[nnm...])
+    end
+    Ha += 2 * (grid.H_field *(-1* current + New_spin)) 
+
     return Ha
 end
-
-
 
 """
   Calculates the difference in Magnetisation(call before doing the flip....)
@@ -215,23 +215,14 @@ function Thermalisation(grid::AbstractGrid,T::Float64,Steps::Int64)
         proposed_spin = normalise_spin((rand(-100:100)/10.0,rand(-100:100)/10.0,rand(-100:100)/10.0))
         
         Delta_energy = Heisenberg_Delta(grid,flip,proposed_spin)
-        #println("DeltaE", Delta_energy)
-        k_b = 1.30 * 10^(-23)
-        k_b = 1
-
-        metroplis_P  = exp(-Delta_energy/(k_b*T))
-        Glauber_P  = metroplis_P/(1+metroplis_P)
-        #println("metroplis_P", metroplis_P)
-        #println("Glauber_P", Glauber_P)
-        #if (rand()< exp(-Delta_energy/T))
-        #if (rand()<Glauber_P )
-        if (Delta_energy< 0) || (rand()< Glauber_P)
-        #println("CHAAAAAAAAAANGGGGGEEEEEEEEE")
+        
+        if (rand()< exp(-Delta_energy/T))
+         #   if (Delta_energy< 0) || (rand()< exp(-Delta_energy/T))
             grid.matrix[flip...] = Tuple(proposed_spin)        
         end
         
     end
-    update_EM(grid)
+    #update_EM(grid)
 end
 
 
@@ -259,8 +250,6 @@ end
 
 
 function Arrow_Dir(xb,yb,Dx,Dy,c)
-
-
     #xt = trunc(Int, xb+Dx) 
     xt =  xb+Dx
     #yt = trunc(Int, yb+Dy) 
@@ -292,28 +281,34 @@ end
 
 
 
+############################################################################################################
 
-HEIGHT = 500
-WIDTH = 500
+#Plot parameters
+HEIGHT = 1000
+WIDTH = 1900
 BACKGROUND = colorant"antiquewhite"
 
-N = [1,5,1]
-J = -1.0
-H = (0.0,1500.0,0.0)
+#Simulation parameters
+N = [20,10]                 # Amount of Spins
+J = 1.0                     # Coupling constant
+H = (0.0,1.0,0.0)           # External Field
 
-twoD_grid = Grid(N,J,H)
+T = 0.04                    # Temperature
+Steps_per_Frame = 1000      # Amount of Simualtions steps per Frame
 
+
+twoD_grid = Grid(N,J,H)     # create a Grid with the given Parameters
+
+
+
+#Inital Data preperations
 A = twoD_grid.matrix
 
-cord = (1,1)
-c =  (A[Tuple(cord)...][3] +1)*0.5
-As = [Arrow_Dir(250,250,A[Tuple(cord)...][1]*40,A[Tuple(cord)...][2]*40,c),
-Arrow_Dir(250,200,A[Tuple(cord)...][1]*40,A[Tuple(cord)...][2]*40,c),
-Arrow_Dir(250,150,A[Tuple(cord)...][1]*40,A[Tuple(cord)...][2]*40,c),
-Arrow_Dir(250,300,A[Tuple(cord)...][1]*40,A[Tuple(cord)...][2]*40,c),
-Arrow_Dir(250,350,A[Tuple(cord)...][1]*40,A[Tuple(cord)...][2]*40,c),
-Arrow_Dir(250,400,A[Tuple(cord)...][1]*40,A[Tuple(cord)...][2]*40,c)]
-
+As = []
+for cord in CartesianIndices(A)
+    c =  (A[Tuple(cord)...][3] +1)*0.5
+    push!(As,Arrow_Dir(cord[1]*900+10,cord[2]*1800+10,A[Tuple(cord)...][1]*40,A[Tuple(cord)...][2]*40,c))
+end
 
 
 function draw(g::Game) 
@@ -325,12 +320,12 @@ function draw(g::Game)
 end
 
 
-
 function update(g::Game)
-    Thermalisation(twoD_grid,300.0,1)
+    Thermalisation(twoD_grid,T,Steps_per_Frame)
+    
     An = twoD_grid.matrix    
     for (ind,cord) in enumerate(CartesianIndices(An))
         c = (A[Tuple(cord)...][3] +1)*0.5
-        As[ind]= Arrow_Dir(250,250,An[Tuple(cord)...][1]*50,An[Tuple(cord)...][2]*50,c)
+        As[ind]= Arrow_Dir(cord[1]*90+7,cord[2]*90+5,An[Tuple(cord)...][1]*50,An[Tuple(cord)...][2]*50,c)
     end
 end

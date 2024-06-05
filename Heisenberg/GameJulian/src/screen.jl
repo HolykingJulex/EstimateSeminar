@@ -228,11 +228,14 @@ function draw(s::Screen, l::LineF, c::Colorant=colorant"red"; jbool=true)
         #SDL_SetTextureBlendMode(t2, SDL_BLENDMODE_NONE);
         #SDL_RenderCopy(s.renderer, t2, C_NULL, C_NULL)
         #SDL_DestroyTexture(t2)
-
-        r = trunc( UInt8, 255 + ((0 - 255) * l.c))
-        #g = 0
-        b = trunc( UInt8,0 + ((255 - 0) * l.c))
-        col =  SDL_Color(r,0,b,255)
+        if l.c == -1
+            col =  SDL_Color(0,142,0,255)
+        else
+            r = trunc( UInt8, 255 + ((0 - 255) * l.c))
+            #g = 0
+            b = trunc( UInt8,0 + ((255 - 0) * l.c))
+            col =  SDL_Color(r,0,b,255)
+        end
            # r::Uint8
            # g::Uint8
            # b::Uint8
