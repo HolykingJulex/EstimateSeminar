@@ -286,7 +286,7 @@ end
 ############################################################################################################
 
 #Plot parameters
-HEIGHT = 150
+HEIGHT = 170
 WIDTH = 650
 BACKGROUND = colorant"antiquewhite"
 
@@ -310,8 +310,8 @@ As = []
 
 for cord in CartesianIndices(A)
     c =  (A[Tuple(cord)...][3] +1)*0.5
-    push!(As,Arrow_Dir(cord[1]*900+10,cord[2]*1800+10,A[Tuple(cord)...][1]*40,A[Tuple(cord)...][2]*40,c))
-    
+    push!(As,Arrow_Dir(cord[1]*90+7,cord[2]*90+5,A[Tuple(cord)...][1]*40,A[Tuple(cord)...][2]*40,c))
+
 end
 
 norm = sqrt(H[1]^2 + H[2]^2 +H[3]) * 0.02
@@ -334,7 +334,8 @@ function update(g::Game)
     An = twoD_grid.matrix    
     for (ind,cord) in enumerate(CartesianIndices(An))
         c = (A[Tuple(cord)...][3] +1)*0.5
-        As[ind]= Arrow_Dir(cord[1]*90+7,cord[2]*90+5,An[Tuple(cord)...][1]*50,An[Tuple(cord)...][2]*50,c)
+        #As[ind]= Arrow_Dir(cord[1]*90+7,cord[2]*90+5,An[Tuple(cord)...][1]*50,An[Tuple(cord)...][2]*50,c)
+        As[ind]= Arrow_Dir(cord[1]*90+7,mod(cord[1],2)*(-50) +130 ,An[Tuple(cord)...][1]*50,An[Tuple(cord)...][2]*50,c)
     end
    
 
