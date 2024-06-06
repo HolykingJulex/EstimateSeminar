@@ -290,7 +290,7 @@ BACKGROUND = colorant"antiquewhite"
 
 #Simulation parameters
 N = [20,10]                 # Amount of Spins
-J = -1.0                     # Coupling constant
+J = 1.0                     # Coupling constant
 H = (0.0,0.0,0.0)           # External Field
 
 T = 0.04                    # Temperature
