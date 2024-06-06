@@ -284,8 +284,8 @@ end
 ############################################################################################################
 
 #Plot parameters
-HEIGHT = 1000
-WIDTH = 1900
+HEIGHT = 850 #1000
+WIDTH = 1600 # 1900
 BACKGROUND = colorant"antiquewhite"
 
 #Simulation parameters

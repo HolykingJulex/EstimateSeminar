@@ -7,5 +7,5 @@ using GameJulian
 
 
 
-rungame("Heisenberg.jl",true)
-#rungame("Mean-Field.jl",true)
+#rungame("Heisenberg.jl",true)
+rungame("Mean-Field.jl",true)
