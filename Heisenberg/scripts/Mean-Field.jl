@@ -293,10 +293,10 @@ BACKGROUND = colorant"antiquewhite"
 #Simulation parameters
 N = [5,1]                   # Amount of Spins
 J = 100.01                    # Coupling of the Spins
-H = (0.0,1500.0,0.0)        # Field
+H = (0.0,8000.0,0.0)        # Field
 
 T = 300.0                   # Temperature
-Steps_per_Frame = 1         # Amount of Simualtions steps per Frame
+Steps_per_Frame = 1         # Amount of Simulation steps per Frame
 
 
 twoD_grid = Grid(N,J,H)     # create a Grid with the given Parameters

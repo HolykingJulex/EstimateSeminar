@@ -290,11 +290,11 @@ BACKGROUND = colorant"antiquewhite"
 
 #Simulation parameters
 N = [20,10]                 # Amount of Spins
-J = 1.0                     # Coupling constant
-H = (0.0,1.0,0.0)           # External Field
+J = -1.0                     # Coupling constant
+H = (0.0,0.0,0.0)           # External Field
 
 T = 0.04                    # Temperature
-Steps_per_Frame = 1000      # Amount of Simualtions steps per Frame
+Steps_per_Frame = 1000      # Amount of Simulation steps per Frame
 
 
 twoD_grid = Grid(N,J,H)     # create a Grid with the given Parameters
